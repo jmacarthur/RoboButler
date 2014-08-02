@@ -1,24 +1,36 @@
 package com.srimech.RoboButlerApp;
 
 import android.app.Activity;
+import android.content.Context;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.TextView;
 import android.widget.ToggleButton;
-import android.net.ConnectivityManager;
-import android.content.Context;
-import android.net.NetworkInfo;
+import ioio.lib.api.DigitalOutput;
+import ioio.lib.api.IOIO;
 import ioio.lib.api.exception.ConnectionLostException;
 import ioio.lib.util.AbstractIOIOActivity;
-import ioio.lib.api.IOIO;
-import ioio.lib.api.DigitalOutput;
-import java.net.NetworkInterface;
-import java.util.List;
-import java.util.Collections;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.security.KeyStore;
+import java.util.Collections;
+import java.util.List;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLServerSocket;
+import javax.net.ssl.SSLServerSocketFactory;
+import javax.net.ssl.SSLSocket;
 import org.apache.http.conn.util.InetAddressUtils;
-import android.location.Location;
-import android.location.LocationManager;
-import android.location.LocationListener;
 
 public class RBStartActivity extends AbstractIOIOActivity
 {
