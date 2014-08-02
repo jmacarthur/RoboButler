@@ -13,6 +13,7 @@ import android.widget.TextView;
 import android.widget.ToggleButton;
 import ioio.lib.api.DigitalOutput;
 import ioio.lib.api.IOIO;
+import ioio.lib.api.Uart;
 import ioio.lib.api.exception.ConnectionLostException;
 import ioio.lib.util.AbstractIOIOActivity;
 import java.io.IOException;
@@ -47,6 +48,7 @@ public class RBStartActivity extends AbstractIOIOActivity
     private boolean ioioConnected = false;
     private StatusThread statusThread;
     private final static String KEYSTOREPASSWORD="password";
+    private OutputStream mbedSerialOut;
 
     /** Called when the activity is first created. */
     @Override
@@ -153,13 +155,14 @@ public class RBStartActivity extends AbstractIOIOActivity
 	}
     }
 
-
     class IOIOThread extends AbstractIOIOActivity.IOIOThread {
 	private DigitalOutput led;
-
+	private Uart uart;
 	public void setup() throws ConnectionLostException {
 	    try {
 		led = ioio_.openDigitalOutput(IOIO.LED_PIN, true);
+		uart = ioio_.openUart(3, 4, 9600, Uart.Parity.NONE, Uart.StopBits.ONE);
+		mbedSerialOut = uart.getOutputStream();
 		enableUI(true);
 	    } catch (ConnectionLostException e) {
 		enableUI(false);
@@ -204,12 +207,12 @@ public class RBStartActivity extends AbstractIOIOActivity
 
     abstract class SocketThread extends Thread {
 	protected ServerSocket serverSocket;
-	protected OutputStream os;
-	protected InputStream is;
+	protected OutputStream socketOut;
+	protected InputStream socketIn;
 
 	public SocketThread() {
 	    super();
-	    os = null;
+	    socketOut = null;
 	    new Thread(updateThread).start();
 	}
 	protected abstract void greet() throws IOException;
@@ -219,14 +222,14 @@ public class RBStartActivity extends AbstractIOIOActivity
 		public void run() {
 		    for(;;) {
 			String status = "";
-			if(os!=null) {
+			if(socketOut!=null) {
 			    if(ioioConnected) {
-				status += "I";
+				status += ":";
 			    } else {
-				status += "-";
+				status += ".";
 			    }
 			    try {
-				os.write(status.getBytes());
+				socketOut.write(status.getBytes());
 			    } 		catch (IOException e) {
 				Log.e(TAG, "Error sending status: "+e);
 			    }
@@ -246,14 +249,18 @@ public class RBStartActivity extends AbstractIOIOActivity
 		try {
 		    Socket s = serverSocket.accept();
 		    Log.d(TAG, "Socket accepted!");
-		    os = s.getOutputStream();
-		    is = s.getInputStream();
+		    socketOut = s.getOutputStream();
+		    socketIn = s.getInputStream();
 		    greet();
-		    os.write("Hello world".getBytes());
+		    socketOut.write("Hello world".getBytes());
 		    for(;;) {
 			Log.d(TAG, "Waiting for some input.");
-			int b = is.read();
-			//if(ioioConnected) mbedSerialOut.write(b);
+			int b = socketIn.read();
+			if(ioioConnected) {
+			    mbedSerialOut.write(b);
+			} else {
+			    socketOut.write("X".getBytes()); //TODO: write isn't thread safe!
+			}
 			if (b==-1) { break; }
 		    }
 		}
@@ -289,7 +296,7 @@ public class RBStartActivity extends AbstractIOIOActivity
 	}
 	protected void greet() throws IOException
 	{
-	    os.write("INSECURE server connected.\n".getBytes());
+	    socketOut.write("INSECURE server connected.\n".getBytes());
 	}
     }
 
@@ -328,7 +335,7 @@ public class RBStartActivity extends AbstractIOIOActivity
 	}
 	protected void greet() throws IOException
 	{
-	    os.write("Secure server connected.\n".getBytes());
+	    socketOut.write("Secure server connected.\n".getBytes());
 	}
     }
 
