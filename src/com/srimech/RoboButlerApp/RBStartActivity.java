@@ -16,6 +16,9 @@ import java.util.List;
 import java.util.Collections;
 import java.net.InetAddress;
 import org.apache.http.conn.util.InetAddressUtils;
+import android.location.Location;
+import android.location.LocationManager;
+import android.location.LocationListener;
 
 public class RBStartActivity extends AbstractIOIOActivity
 {
@@ -23,6 +26,7 @@ public class RBStartActivity extends AbstractIOIOActivity
     private TextView textView;
     private TextView networkTextView;
     private TextView IPAddressView;
+    private TextView locationTextView;
     private ToggleButton toggleButton;
 
     private StatusThread statusThread;
@@ -37,11 +41,36 @@ public class RBStartActivity extends AbstractIOIOActivity
         textView = (TextView) findViewById(R.id.TextView);
         networkTextView = (TextView) findViewById(R.id.NetworkTextView);
         IPAddressView = (TextView) findViewById(R.id.IPAddressView);
+        locationTextView = (TextView) findViewById(R.id.LocationTextView);
 	toggleButton = (ToggleButton) findViewById(R.id.ToggleButton);
 	enableUI(false);
 
 	statusThread = new StatusThread();
-	statusThread.start(); // TODO: Do we need to suspend it if we're paged out?
+	statusThread.start(); // TODO: Do we need to suspend it on onPause/onStop?
+
+	LocationListener locationListener = new LocationListener() {
+		public void onLocationChanged(Location location) {
+		    // Called when a new location is found by the network location provider.
+		    updateLocation(location.toString());
+		}
+		public void onProviderDisabled(String s) {
+		    updateLocation("DISABLED: "+s);
+		}
+		public void onStatusChanged(String provider, int status, Bundle extras) { }
+		public void onProviderEnabled(String provider) {}
+	    };
+	LocationManager lm = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+	lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, (float) 0.1, locationListener);
+    }
+
+    private void updateLocation(final String l)
+    {
+	runOnUiThread(new Runnable() {
+		@Override
+		public void run() {
+		    locationTextView.setText(l);
+		}
+	    });
     }
 
     private void updateStatus() {
