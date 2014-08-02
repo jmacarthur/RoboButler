@@ -16,6 +16,18 @@
     android:layout_height="wrap_content"
     android:layout_margin="20px"
     />
+<TextView
+    android:id="@+id/NetworkTextView"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:text="Network state unknown"
+    />
+<TextView
+    android:id="@+id/IPAddressView"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:text="IP address unknown"
+    />
 
 </LinearLayout>
 

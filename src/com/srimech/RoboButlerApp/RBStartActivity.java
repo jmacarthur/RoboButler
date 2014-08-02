@@ -4,17 +4,28 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.widget.TextView;
 import android.widget.ToggleButton;
-
+import android.net.ConnectivityManager;
+import android.content.Context;
+import android.net.NetworkInfo;
 import ioio.lib.api.exception.ConnectionLostException;
 import ioio.lib.util.AbstractIOIOActivity;
 import ioio.lib.api.IOIO;
 import ioio.lib.api.DigitalOutput;
+import java.net.NetworkInterface;
+import java.util.List;
+import java.util.Collections;
+import java.net.InetAddress;
+import org.apache.http.conn.util.InetAddressUtils;
 
 public class RBStartActivity extends AbstractIOIOActivity
 {
 
     private TextView textView;
+    private TextView networkTextView;
+    private TextView IPAddressView;
     private ToggleButton toggleButton;
+
+    private StatusThread statusThread;
 
     /** Called when the activity is first created. */
     @Override
@@ -24,9 +35,70 @@ public class RBStartActivity extends AbstractIOIOActivity
         setContentView(R.layout.main);
 
         textView = (TextView) findViewById(R.id.TextView);
+        networkTextView = (TextView) findViewById(R.id.NetworkTextView);
+        IPAddressView = (TextView) findViewById(R.id.IPAddressView);
 	toggleButton = (ToggleButton) findViewById(R.id.ToggleButton);
 	enableUI(false);
+
+	statusThread = new StatusThread();
+	statusThread.start(); // TODO: Do we need to suspend it if we're paged out?
     }
+
+    private void updateStatus() {
+	ConnectivityManager connManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+	NetworkInfo mWifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+	final NetworkInfo.State networkstate = mWifi.getState();
+	final String ipAddress = getIpAddress(true); 
+	runOnUiThread(new Runnable() {
+		@Override
+		public void run() {
+		    networkTextView.setText(networkstate.name());
+		    IPAddressView.setText(ipAddress);
+		}
+	    });
+	
+    }
+    
+    /* The getIpAddress function was compiled by Whome on stackoverflow */
+    /* See http://stackoverflow.com/questions/6064510/how-to-get-ip-address-of-the-device */
+
+    public String getIpAddress(boolean useIPv4) {
+	try {
+            List<NetworkInterface> interfaces = Collections.list(NetworkInterface.getNetworkInterfaces());
+            for (NetworkInterface intf : interfaces) {
+                List<InetAddress> addrs = Collections.list(intf.getInetAddresses());
+                for (InetAddress addr : addrs) {
+                    if (!addr.isLoopbackAddress()) {
+                        String sAddr = addr.getHostAddress().toUpperCase();
+                        boolean isIPv4 = InetAddressUtils.isIPv4Address(sAddr); 
+                        if (useIPv4) {
+                            if (isIPv4) 
+                                return sAddr;
+                        } else {
+                            if (!isIPv4) {
+                                int delim = sAddr.indexOf('%'); // drop ip6 port suffix
+                                return delim<0 ? sAddr : sAddr.substring(0, delim);
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception ex) { } // for now eat exceptions
+        return "";
+    }
+
+    class StatusThread extends Thread
+    {
+	public void run()
+	{
+	    updateStatus();
+	    try {
+		sleep(3);
+	    } catch (InterruptedException ignored) {}
+
+	}
+    }
+
 
     class IOIOThread extends AbstractIOIOActivity.IOIOThread {
 	private DigitalOutput led;
