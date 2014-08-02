@@ -40,8 +40,13 @@ public class RBStartActivity extends AbstractIOIOActivity
     private TextView IPAddressView;
     private TextView locationTextView;
     private ToggleButton toggleButton;
-
+    private SocketThread socketThread;
+    private static int INSECURE_PORT=6000;
+    private static int SSL_PORT=6001;
+    private static String TAG = "Gerty";
+    private boolean ioioConnected = false;
     private StatusThread statusThread;
+    private final static String KEYSTOREPASSWORD="password";
 
     /** Called when the activity is first created. */
     @Override
@@ -59,6 +64,14 @@ public class RBStartActivity extends AbstractIOIOActivity
 
 	statusThread = new StatusThread();
 	statusThread.start(); // TODO: Do we need to suspend it on onPause/onStop?
+
+	boolean ssl = false;
+	if (ssl) {
+	    socketThread = new SSLThread();
+	} else {
+	    socketThread = new InsecureThread();
+	}
+	socketThread.start();
 
 	LocationListener locationListener = new LocationListener() {
 		public void onLocationChanged(Location location) {
@@ -170,6 +183,7 @@ public class RBStartActivity extends AbstractIOIOActivity
     }
 
     private void enableUI(final boolean enable) {
+	ioioConnected = enable;
 	runOnUiThread(new Runnable() {
 		@Override
 		public void run() {
@@ -188,5 +202,134 @@ public class RBStartActivity extends AbstractIOIOActivity
 	    });
     }
 
+    abstract class SocketThread extends Thread {
+	protected ServerSocket serverSocket;
+	protected OutputStream os;
+	protected InputStream is;
+
+	public SocketThread() {
+	    super();
+	    os = null;
+	    new Thread(updateThread).start();
+	}
+	protected abstract void greet() throws IOException;
+
+	protected Runnable updateThread = new Runnable() {
+		@Override
+		public void run() {
+		    for(;;) {
+			String status = "";
+			if(os!=null) {
+			    if(ioioConnected) {
+				status += "I";
+			    } else {
+				status += "-";
+			    }
+			    try {
+				os.write(status.getBytes());
+			    } 		catch (IOException e) {
+				Log.e(TAG, "Error sending status: "+e);
+			    }
+			}
+			try {
+			    Thread.sleep(1000);
+			} catch (InterruptedException ex) {
+			    // Meh
+			}
+		    }
+		}
+	    };
+
+	protected void runLoop()
+	{
+	    for(;;) {
+		try {
+		    Socket s = serverSocket.accept();
+		    Log.d(TAG, "Socket accepted!");
+		    os = s.getOutputStream();
+		    is = s.getInputStream();
+		    greet();
+		    os.write("Hello world".getBytes());
+		    for(;;) {
+			Log.d(TAG, "Waiting for some input.");
+			int b = is.read();
+			//if(ioioConnected) mbedSerialOut.write(b);
+			if (b==-1) { break; }
+		    }
+		}
+		catch (IOException ex) {
+		    Log.e(TAG, "Failed to accept socket: "+ex);
+		}
+		try {
+		    Thread.sleep(1000);
+		} catch(InterruptedException ex) {
+		    // meh
+		}
+	    }
+
+	}
+    }
+
+    class InsecureThread extends SocketThread {
+	public void run() {
+	    Log.d(TAG, "Starting insecure socket thread.");
+	    try {
+		createSocket();
+	    } catch (Exception e) {
+		e.printStackTrace();
+		Log.d(TAG, "Failed to create socket properly");
+		return;
+	    }
+	    runLoop();
+	}
+	private void createSocket() throws Exception
+	{
+	    serverSocket = new ServerSocket(INSECURE_PORT);
+	    Log.d(TAG, "Socket created successfully");
+	}
+	protected void greet() throws IOException
+	{
+	    os.write("INSECURE server connected.\n".getBytes());
+	}
+    }
+
+    class SSLThread extends SocketThread {
+
+	public void run()
+	{
+	    Log.d(TAG, "Starting SSL socket thread.");
+	    try {
+		createSocket();
+	    } catch (Exception e) {
+		e.printStackTrace();
+		Log.d(TAG, "Failed to create socket properly");
+		return;
+	    }
+	    runLoop();
+	}
+	private void createSocket() throws Exception
+	{
+	    // Socket creation code from http://yaragalla.blogspot.co.uk/
+	    String keyStoreType = KeyStore.getDefaultType();
+	    KeyStore keyStore = KeyStore.getInstance(keyStoreType);
+	    InputStream is = getResources().getAssets().open("ServerKeystore");
+	    keyStore.load(is, KEYSTOREPASSWORD.toCharArray());
+
+	    String keyalg=KeyManagerFactory.getDefaultAlgorithm();
+	    KeyManagerFactory kmf=KeyManagerFactory.getInstance(keyalg);
+	    kmf.init(keyStore, KEYSTOREPASSWORD.toCharArray());
+
+	    SSLContext context = SSLContext.getInstance("TLS");
+	    context.init(kmf.getKeyManagers(), null, null);
+	    SSLServerSocket s =(SSLServerSocket)context.getServerSocketFactory().createServerSocket(SSL_PORT);
+	    s.setNeedClientAuth(true);
+	    serverSocket = s;
+	    Log.d(TAG, "Socket created successfully");
+	}
+	protected void greet() throws IOException
+	{
+	    os.write("Secure server connected.\n".getBytes());
+	}
+    }
 
 }
