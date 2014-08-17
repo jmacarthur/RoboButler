@@ -90,6 +90,15 @@ def runGameLoop():
     joyCentreX = 128
     joyCentreY = 360
     joySize = 64
+    joystick = None
+
+    if pygame.joystick.get_count() > 0:
+        print "There are %d joysticks." % pygame.joystick.get_count()
+        pygame.joystick.Joystick(0).init()
+        if pygame.joystick.Joystick(0).get_numaxes >= 4:
+            joystick = pygame.joystick.Joystick(0)
+            print "Joystick registered"
+
 
     while True:
         screen.fill((0,0,255))
@@ -130,6 +139,11 @@ def runGameLoop():
                             joyx = dx
                             joyy = dy
 
+        # Check joysticks...
+        if joystick != None:
+            joyx = int(joystick.get_axis(2) * joyxrange)
+            joyy = int(-joystick.get_axis(1) * joyyrange)
+
         # Monitor keys and adjust joystick if necessary
         keys = pygame.key.get_pressed()
         if keys[K_UP]:    joyy = min(joyy+keyspeed, joyyrange)
@@ -162,6 +176,7 @@ def main():
     global font, screen, exitFlag
     pygame.init()
     pygame.font.init()
+    pygame.joystick.init()
     font = pygame.font.Font(pygame.font.get_default_font(), 48, italic = True)
     font.set_italic(True)
     screen = pygame.display.set_mode((640,480))
