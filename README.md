@@ -20,3 +20,4 @@ This repository was previously RoboButlerApp, which just contained the Android a
                       +--------------+
 </pre>
 
+Communications between systems is described in the PROTOCOL.md document.
