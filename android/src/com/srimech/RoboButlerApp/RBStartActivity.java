@@ -227,16 +227,14 @@ public class RBStartActivity extends AbstractIOIOActivity
 		@Override
 		public void run() {
 		    for(;;) {
-			String status = "";
 			if(socketOut!=null) {
-			    if(ioioConnected) {
-				status += ":";
-			    } else {
-				status += ".";
-			    }
 			    try {
-				socketOut.write(status.getBytes());
-			    } 		catch (IOException e) {
+				if(ioioConnected) {
+				    socketOut.write(129);
+				} else {
+				    socketOut.write(128);
+				}
+			    } catch (IOException e) {
 				Log.e(TAG, "Error sending status: "+e);
 			    }
 			}
