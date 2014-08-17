@@ -29,6 +29,12 @@
     android:text="IP address unknown"
     />
 <TextView
+    android:id="@+id/RasPiIPAddressView"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:text="RasPi IP address unknown"
+    />
+<TextView
     android:id="@+id/LocationTextView"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"

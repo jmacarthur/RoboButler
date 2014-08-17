@@ -39,6 +39,7 @@ public class RBStartActivity extends AbstractIOIOActivity
     private TextView textView;
     private TextView networkTextView;
     private TextView IPAddressView;
+    private TextView RasPiIPAddressView;
     private TextView locationTextView;
     private ToggleButton toggleButton;
     private SocketThread socketThread;
@@ -60,6 +61,7 @@ public class RBStartActivity extends AbstractIOIOActivity
         textView = (TextView) findViewById(R.id.TextView);
         networkTextView = (TextView) findViewById(R.id.NetworkTextView);
         IPAddressView = (TextView) findViewById(R.id.IPAddressView);
+        RasPiIPAddressView = (TextView) findViewById(R.id.RasPiIPAddressView);
         locationTextView = (TextView) findViewById(R.id.LocationTextView);
 	toggleButton = (ToggleButton) findViewById(R.id.ToggleButton);
 	enableUI(false);
@@ -105,14 +107,18 @@ public class RBStartActivity extends AbstractIOIOActivity
 	NetworkInfo mWifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
 	final NetworkInfo.State networkstate = mWifi.getState();
 	final String ipAddress = getIpAddress(true); 
+	final String rasPiAddress = System.getProperty("com.srimech.robobutlerIP");
 	runOnUiThread(new Runnable() {
 		@Override
 		public void run() {
 		    networkTextView.setText(networkstate.name());
 		    IPAddressView.setText(ipAddress);
+		    if(rasPiAddress != null) {
+			RasPiIPAddressView.setText(rasPiAddress);
+		    }
 		}
 	    });
-	
+	// Try and get the RasPi IP propery
     }
     
     /* The getIpAddress function was compiled by Whome on stackoverflow */
