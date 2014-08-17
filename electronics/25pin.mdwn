@@ -1,0 +1,51 @@
+## 25 Pin D-type connector on processor box
+
+Looking into female connector on box from outside
+
+<pre>
+
+    +----------------------------------------+
+    \ 13 12 11 10 09 08 07 06 05 04 03 02 01 /
+     \  25 24 23 22 21 20 19 18 17 16 15 14 /
+      --------------------------------------
+
+14 - +5V power for Raspberry Pi
+15 - +5V power for USB Hub
+16 - +5V power for IOIO and MBED
+17 - Spare for extra power for IOIO if necessary
+
+Note that whatever connects to the Android charges it, so the IOIO or the Raspberry Pi may need quite a bit of power.
+
+25 - Ground (0V)
+24 - Ground (0V)
+
+
+13 - CANH
+12 - CANL
+
+11 - CAN switch relay
+10 - Ignition switch
+09 - Horn
+08 - Light (shorts to ground when on)
+</pre>
+
+## Potentially reserved pins
+
+Ultrasound - 2 per sensor = 10 (01-?)
+
+## Power usage
+
+* IOIO and Mbed alone, with no phone attached: 190mA
+* IOIO, MBed, mobile phone charging on maximum setting: 400mA
+
+The phone charge current seems dependent on the cable used. It never seems to be much - 200mA probably isn't enough to keep the phone charged.
+
+* Raspberry Pi, with Ciseco wireless module and Creative webcam - ~340mA
+* As above, charging mobile phone - 550mA
+
+So whether through the RasPi or IOIO, we only charge the phone with 200mA - which may not be enough.
+
+Using the 4-port USB hub, the power consumption is 260mA, slightly better.
+
+
+
