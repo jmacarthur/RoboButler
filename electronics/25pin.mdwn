@@ -10,8 +10,8 @@ Looking into female connector on box from outside
       --------------------------------------
 
 14 - +5V power for Raspberry Pi
-15 - +5V power for USB Hub
-16 - +5V power for IOIO and MBED
+15 - +5V power for IOIO and MBED
+16 - +5V power for USB Hub
 17 - Spare for extra power for IOIO if necessary
 
 Note that whatever connects to the Android charges it, so the IOIO or the Raspberry Pi may need quite a bit of power.
