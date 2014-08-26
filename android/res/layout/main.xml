@@ -16,6 +16,36 @@
     android:layout_height="wrap_content"
     android:layout_margin="20px"
     />
+<Button
+    android:id="@+id/LocalJoystick"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_margin="20px"
+    />
+<Button
+    android:id="@+id/Forward"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_margin="20px"
+    />
+<Button
+    android:id="@+id/Backward"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_margin="20px"
+    />
+<Button
+    android:id="@+id/Left"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_margin="20px"
+    />
+<Button
+    android:id="@+id/Right"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_margin="20px"
+    />
 <TextView
     android:id="@+id/NetworkTextView"
     android:layout_width="fill_parent"

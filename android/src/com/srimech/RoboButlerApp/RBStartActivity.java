@@ -11,6 +11,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
 import android.widget.ToggleButton;
+import android.widget.Button;
+import android.view.View;
 import ioio.lib.api.DigitalOutput;
 import ioio.lib.api.IOIO;
 import ioio.lib.api.Uart;
@@ -42,6 +44,11 @@ public class RBStartActivity extends AbstractIOIOActivity
     private TextView RasPiIPAddressView;
     private TextView locationTextView;
     private ToggleButton toggleButton;
+    private Button joystickButton;
+    private Button fwdButton;
+    private Button revButton;
+    private Button leftButton;
+    private Button rightButton;
     private SocketThread socketThread;
     private static int INSECURE_PORT=6000;
     private static int SSL_PORT=6001;
@@ -64,6 +71,19 @@ public class RBStartActivity extends AbstractIOIOActivity
         RasPiIPAddressView = (TextView) findViewById(R.id.RasPiIPAddressView);
         locationTextView = (TextView) findViewById(R.id.LocationTextView);
 	toggleButton = (ToggleButton) findViewById(R.id.ToggleButton);
+	joystickButton = (Button) findViewById(R.id.LocalJoystick);
+	joystickButton.setOnClickListener(new View.OnClickListener() {
+		public void onClick(View v) {
+		    // TODO: Check this is threadsafe
+		    if(ioioConnected) {
+			try {
+			    mbedSerialOut.write('j');
+			} catch (IOException e) {
+			    // meh
+			}
+		    }
+		}
+	    });
 	enableUI(false);
 
 	statusThread = new StatusThread();
@@ -226,20 +246,35 @@ public class RBStartActivity extends AbstractIOIOActivity
 	protected Runnable updateThread = new Runnable() {
 		@Override
 		public void run() {
+		    int frameCounter = 0;
 		    for(;;) {
+			frameCounter + = 1;
 			if(socketOut!=null) {
-			    try {
-				if(ioioConnected) {
-				    socketOut.write(129);
-				} else {
-				    socketOut.write(128);
+			    if(frameCounter % 10 == 0) {
+				try {
+				    if(ioioConnected) {
+					socketOut.write(129);
+				    } else {
+					socketOut.write(128);
+				    }
+				} catch (IOException e) {
+				    Log.e(TAG, "Error sending status: "+e);
 				}
-			    } catch (IOException e) {
-				Log.e(TAG, "Error sending status: "+e);
+			    }
+			    // Now, if joystick is on, we could transmit joystick position... but we'd need to do it
+			    // every 250ms to keep alive...
+			    if(ioioConnected) {
+				int fwd = 0; // 0-127
+				int lr = 0; // 0-63
+				int parity = 0; // todo
+				byte b1 = 0x80 | fwd;
+				byte b2 = lr << 1 | parity;
+				mbedSerialOut.write(b1);
+				mbedSerialOut.write(b2);
 			    }
 			}
 			try {
-			    Thread.sleep(1000);
+			    Thread.sleep(100);
 			} catch (InterruptedException ex) {
 			    // Meh
 			}
