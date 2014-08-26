@@ -14,19 +14,23 @@ Looking into female connector on box from outside
 16 - +5V power for USB Hub
 17 - Spare for extra power for IOIO if necessary
 
+In the current configuration 16 is fed from the CAN switch box and 14, 15 are fed from the auxilliary power supply.
+
 Note that whatever connects to the Android charges it, so the IOIO or the Raspberry Pi may need quite a bit of power.
 
 25 - Ground (0V)
 24 - Ground (0V)
-
+23 - Ground (0V)
+25-23 are connected at the male connector.
 
 13 - CANH
 12 - CANL
 
+11-08 are connected to the ULN2803 and short to ground when turned on by the MBED.
 11 - CAN switch relay
 10 - Ignition switch
 09 - Horn
-08 - Light (shorts to ground when on)
+08 - Headlights
 </pre>
 
 ## Potentially reserved pins

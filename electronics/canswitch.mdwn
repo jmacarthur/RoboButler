@@ -1,0 +1,7 @@
+## CAN switch box
+
+The CAN switch box connects between the motor controller and the joystick unit.
+
+The DXBUS lead splits into a relay here which switches the CAN bus between the joystick unit and the MBED. The DPDT relay has a 5V coil and there's a 5V regulator in the same box. The box has connectors to the motor controller and joystick unit on the original DXBUS cable, and also feeds out the swtiched CAN bus signal, with ground, 5V power from the regulator, and the relay switch which must be grounded to switch the relay to the joystick unit. Since the robot will spend most of its time being controlled by the MBED, the relay is energised to switch to the joystick unit.
+
+The regulator in the switch box was originally intended to provide power to all the other systems from the DXBUS power, but we've since added auxilliary regulators to provide an abundance of power at 5V.
