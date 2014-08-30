@@ -28,7 +28,7 @@ def drawText(surface, text, pos, colour = (0,0,0)):
 def connect():
     global commandSocket, netstatus
     netstatus = ("Connecting", (0,127,0))
-    commandSocket = socket.create_connection(("10.0.1.92", 6000))
+    commandSocket = socket.create_connection(("127.0.0.1", 6000))
     if commandSocket is None:
         print "Connect failed"
         netstatus = ("Failed", (255,0,0))
@@ -80,6 +80,10 @@ def button(keycode, uc):
         driveOn = not driveOn
     elif keycode == K_j:
         sendSerial('j')
+    elif keycode == K_h:
+        sendSerial('h')
+    elif keycode == K_l:
+        sendSerial('l')
 
 def runGameLoop():
     frameCounter = 0
